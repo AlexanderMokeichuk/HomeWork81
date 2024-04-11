@@ -5,32 +5,35 @@ import Link from "../../models/Link";
 
 const linkShortenerRouter = express.Router();
 
-linkShortenerRouter.post("/", async (req, res) => {
+linkShortenerRouter.post("/", async (req, res, next) => {
   if (!req.body.url) {
     return res.status(400).json({error: "Incorrect data"});
   }
   if (req.body.url.trim() === "") {
     return res.status(404).json({error: "You have sent an empty url"});
   }
+  try {
+    const links: LinkApi[] = await Link.find();
 
-  const links: LinkApi[] = await Link.find();
+    let newUrl = NEW_URL();
+    links.forEach((item) => {
+      if (item.shortUrl === newUrl) {
+        newUrl = NEW_URL();
+      }
+    });
 
-  let newUrl = NEW_URL();
-  links.forEach((item) => {
-    if (item.shortUrl === newUrl) {
-      newUrl = NEW_URL();
-    }
-  });
+    const postLink: LinkApi = {
+      originalUrl: req.body.url,
+      shortUrl: newUrl,
+    };
 
-  const postLink: LinkApi = {
-    originalUrl: req.body.url,
-    shortUrl: newUrl,
-  };
+    const link = new Link(postLink);
+    await link.save();
 
-  const link = new Link(postLink);
-  await link.save();
-
-  return res.send(postLink);
+    return res.send(postLink);
+  } catch (e) {
+    next(e);
+  }
 });
 
 linkShortenerRouter.get("/", async (req, res, next) => {
