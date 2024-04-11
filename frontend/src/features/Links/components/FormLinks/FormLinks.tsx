@@ -1,6 +1,8 @@
 import React, {ChangeEvent, FormEvent, useState} from "react";
 import {Button, Grid, TextField, Typography} from "@mui/material";
-import {LinkFrontend} from "../../../type";
+import {LinkFrontend} from "../../../../type";
+import {useAppDispatch} from "../../../../app/hooks";
+import {shortenUrl} from "../../linksThunks";
 
 const defaultState: LinkFrontend = {
   url: "",
@@ -8,6 +10,7 @@ const defaultState: LinkFrontend = {
 
 const FormLinks: React.FC = () => {
   const [form, setForm] = useState<LinkFrontend>(defaultState);
+  const dispatch = useAppDispatch();
 
   const changeFrom = (e: ChangeEvent<HTMLInputElement>) => {
     const {name, value} = e.target;
@@ -17,26 +20,26 @@ const FormLinks: React.FC = () => {
     }));
   };
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log(form);
+    await dispatch(shortenUrl(form));
+    setForm(defaultState);
   };
   return (
     <form onSubmit={onSubmit}>
-      <Typography
-        variant={"h3"}
-        textAlign={"center"}
-        marginBottom={7}
-      >
-        Shorten your link
-      </Typography>
-      <Grid container direction={"row"} justifyContent={"center"} gap={2} alignItems={"center"}>
+      <Grid container justifyContent={"center"} gap={2}>
+        <Typography
+          variant={"h3"}
+          marginBottom={7}
+        >
+          Shorten your link
+        </Typography>
         <TextField
           name={"url"}
-          label="URL"
+          label="Enter URL here"
           type={"url"}
           variant="standard"
-          sx={{width: "70%"}}
+          fullWidth={true}
           required
 
           value={form.url}
@@ -47,7 +50,7 @@ const FormLinks: React.FC = () => {
           aria-label="Basic button group"
           type={"submit"}
         >
-          Send
+          Shorten
         </Button>
       </Grid>
     </form>
