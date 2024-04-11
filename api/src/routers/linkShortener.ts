@@ -1,7 +1,7 @@
 import express from "express";
 import {NEW_URL} from "../constants";
 import {LinkApi} from "../type";
-import Link from "../../models/Link";
+import Link from "../models/Link";
 
 const linkShortenerRouter = express.Router();
 
@@ -13,6 +13,11 @@ linkShortenerRouter.post("/", async (req, res, next) => {
     return res.status(404).json({error: "You have sent an empty url"});
   }
   try {
+    const checkingTheLink = await Link.find({originalUrl: req.body.url});
+    if (checkingTheLink.length) {
+      return res.send(checkingTheLink[0]);
+    }
+
     const links: LinkApi[] = await Link.find();
 
     let newUrl = NEW_URL();
